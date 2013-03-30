@@ -137,6 +137,11 @@ typedef enum
  */
 + (BOOL) AMCEnabled;
 
+/** Used to specify a class to use for the elements within a collection
+ * as an alternative to requiring a "class" attribute in the source dictionary
+ */
+- (Class)AMCElementClassForCollectionWithKey:(NSString*)key;
+
 #pragma mark Decode/Create/Init
 
 /** Creates autoreleased object with given dictionary representation.
@@ -303,7 +308,7 @@ typedef enum
  * Recursively uses itself for objects in collections. 
  * You don't need to call this function directly.
  */
-id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass);
+id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass, id elementClass);
 
 /** Returns object that can be added to dictionary for dictionaryRepresentation. 
  * You don't need to call this function directly.

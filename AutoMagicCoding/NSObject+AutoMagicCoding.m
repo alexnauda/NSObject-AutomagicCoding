@@ -71,6 +71,10 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
     return NO;
 }
 
+- (Class)AMCElementClassForCollectionWithKey:(NSString*)key {
+    return [NSObject class];
+}
+
 #pragma mark Decode/Create/Init
 
 + (id) objectWithDictionaryRepresentation: (NSDictionary *) aDict
@@ -118,7 +122,11 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
                 else
                 {
                     id class = AMCPropertyClass(property);
-                    value = AMCDecodeObject(value, fieldType, class);
+                    
+                    // determine whether the user specified a class for the object in this collection
+                    Class elementClass = [self AMCElementClassForCollectionWithKey:key];
+                    
+                    value = AMCDecodeObject(value, fieldType, class, elementClass);
                     [self setValue:value forKey: key];
                 }
             }
@@ -157,7 +165,7 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
                 else
                 {
                     id class = AMCPropertyClass(property);
-                    value = AMCDecodeObject(value, fieldType, class);
+                    value = AMCDecodeObject(value, fieldType, class, [NSObject class]);
                     [self setValue:value forKey: key];
                 }
             }
@@ -484,7 +492,7 @@ BOOL classInstancesRespondsToAllSelectorsInProtocol(id class, Protocol *p )
     return YES;
 }
 
-id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass )
+id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass, Class elementClass )
 {
     switch (fieldType) 
     {
@@ -492,7 +500,12 @@ id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass )
         // Object as it's representation - create new.
         case kAMCFieldTypeCustomObject:
         {
-            id object = [NSObject objectWithDictionaryRepresentation: (NSDictionary *) value];
+            id object;
+            if (elementClass == [NSObject class]) {
+                object = [NSObject objectWithDictionaryRepresentation: (NSDictionary *) value];
+            } else {
+                object = [[elementClass alloc] initWithDictionaryRepresentation:(NSDictionary *)value];
+            }
             
             // Here was following code:
             // if (object)
@@ -523,7 +536,13 @@ id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass )
             for (unsigned int i = 0; i < [srcCollection count]; ++i)
             {
                 id curEncodedObjectInCollection = [srcCollection objectAtIndex: i];
-                id curDecodedObjectInCollection = AMCDecodeObject( curEncodedObjectInCollection, AMCFieldTypeForEncodedObject(curEncodedObjectInCollection), nil );
+                id fieldType;
+                if (elementClass && [NSObject class] != elementClass) {
+                    fieldType = kAMCFieldTypeCustomObject;
+                } else {
+                    fieldType = AMCFieldTypeForEncodedObject(curEncodedObjectInCollection);
+                }
+                id curDecodedObjectInCollection = AMCDecodeObject( curEncodedObjectInCollection, fieldType, nil, elementClass );
                 [dstCollection addObject: curDecodedObjectInCollection];
             }
             
@@ -559,7 +578,7 @@ id AMCDecodeObject (id value, AMCFieldType fieldType, id collectionClass )
             for (NSString *curKey in [srcCollection allKeys])
             {
                 id curEncodedObjectInCollection = [srcCollection valueForKey: curKey];
-                id curDecodedObjectInCollection = AMCDecodeObject( curEncodedObjectInCollection, AMCFieldTypeForEncodedObject(curEncodedObjectInCollection), nil );
+                id curDecodedObjectInCollection = AMCDecodeObject( curEncodedObjectInCollection, AMCFieldTypeForEncodedObject(curEncodedObjectInCollection), nil, elementClass );
                 [dstCollection setObject: curDecodedObjectInCollection forKey: curKey];
             }
             
