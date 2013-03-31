@@ -127,7 +127,8 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
                     Class elementClass = [self AMCElementClassForCollectionWithKey:key];
                     
                     value = AMCDecodeObject(value, fieldType, class, elementClass);
-                    [self setValue:value forKey: key];
+                    if ([value class] != [NSNull class]) // JSONKit is putting NSNull into the dictionary
+                        [self setValue:value forKey: key];
                 }
             }
         }
