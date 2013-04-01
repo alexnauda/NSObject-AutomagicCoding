@@ -121,10 +121,13 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
                 }
                 else
                 {
-                    id class = AMCPropertyClass(property);
+                    Class class = AMCPropertyClass(property);
                     
                     // determine whether the user specified a class for the object in this collection
                     Class elementClass = [self AMCElementClassForCollectionWithKey:key];
+                    if (fieldType != kAMCFieldTypeCollectionArray) {
+                        elementClass = class;
+                    }
                     
                     value = AMCDecodeObject(value, fieldType, class, elementClass);
                     if ([value class] != [NSNull class]) // JSONKit is putting NSNull into the dictionary
