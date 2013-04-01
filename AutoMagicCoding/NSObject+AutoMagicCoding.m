@@ -125,7 +125,7 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
                     
                     // determine whether the user specified a class for the object in this collection
                     Class elementClass = [self AMCElementClassForCollectionWithKey:key];
-                    if (fieldType != kAMCFieldTypeCollectionArray) {
+                    if (fieldType != kAMCFieldTypeCollectionArray && fieldType != kAMCFieldTypeCollectionArrayMutable && fieldType != kAMCFieldTypeCollectionHash && fieldType != kAMCFieldTypeCollectionHashMutable) {
                         elementClass = class;
                     }
                     
