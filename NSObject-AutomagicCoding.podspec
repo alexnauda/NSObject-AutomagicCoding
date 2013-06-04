@@ -8,4 +8,5 @@ Pod::Spec.new do |s|
   s.source   = { :git => 'https://github.com/alexnauda/NSObject-AutomagicCoding.git', :tag => 'v1.1.1.alexnauda' }
   s.source_files = 'AutoMagicCoding/NSObject+AutoMagicCoding.{h,m}'
   s.requires_arc = false
+  s.dependency       'ISO8601DateFormatter', '~> 0.6'
 end
