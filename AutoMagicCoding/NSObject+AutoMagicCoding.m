@@ -25,6 +25,7 @@
 //  THE SOFTWARE.
 
 #import "NSObject+AutoMagicCoding.h"
+#import <ISO8601DateFormatter.h>
 
 #ifdef __IPHONE_OS_VERSION_MAX_ALLOWED
 
@@ -63,6 +64,8 @@ NSString *const AMCVersion = @"1.1";
 NSString *const AMCEncodeException = @"AMCEncodeException";
 NSString *const AMCDecodeException = @"AMCDecodeException";
 NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureException";
+
+static ISO8601DateFormatter *formatter;
 
 @implementation NSObject (AutoMagicCoding)
 
@@ -131,7 +134,12 @@ NSString *const AMCKeyValueCodingFailureException = @"AMCKeyValueCodingFailureEx
                     
                     if ([value class] != [NSNull class]) { // JSONKit is putting NSNull here
                         value = AMCDecodeObject(value, fieldType, class, elementClass);
-                        if ([value class] != [NSNull class]) // JSONKit is putting NSNull into the dictionary
+                        if (class == [NSDate class]) {
+                            if (!formatter)
+                                formatter = [[ISO8601DateFormatter alloc] init];
+                            NSDate *date = [formatter dateFromString:value];
+                            [self setValue:date forKey:key];
+                        } else if ([value class] != [NSNull class]) // JSONKit is putting NSNull into the dictionary
                             [self setValue:value forKey: key];
                     }
                 }
